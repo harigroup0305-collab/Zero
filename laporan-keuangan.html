@@ -191,7 +191,7 @@ input,select{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
 <div class="toast" id="toast" hidden role="status"><span id="tmsg"></span><button id="undo" type="button">Urungkan</button></div>
 
 <script>
-(function(){
+ZERO.ready.then(function(){
 var MONTHS=['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
 var MS=['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
 var KEY='laporan-keuangan-v1';
@@ -438,7 +438,7 @@ if(!RM)setInterval(tickAll,4500);
 load();
 st.period=keys().indexOf('2026-10')>=0?'2026-10':(keys().pop()||'all');
 $('f-date').value=today();fillCats();themeLabel();all();
-})();
+});
 </script>
 </body>
 </html>
