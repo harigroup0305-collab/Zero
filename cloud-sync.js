@@ -16,8 +16,14 @@
   async function syncModule(module,key,read,writeLocal,skipSample){
     const {data,error}=await db.from("zero_user_data").select("payload").eq("user_id",userId).eq("module",module).maybeSingle();
     if(error)throw error;
-    if(data){writeLocal(data.payload);return;}
     const local=read();
+    if(data){
+      if(skipSample&&skipSample(local)){writeLocal(data.payload);return;}
+      const merged=[...new Map([...(Array.isArray(data.payload)?data.payload:[]),...(Array.isArray(local)?local:[])].map(item=>[JSON.stringify(item),item])).values()];
+      writeLocal(merged);
+      if(merged.length!==(Array.isArray(data.payload)?data.payload.length:0))await write(module,merged);
+      return;
+    }
     if(skipSample&&skipSample(local))return;
     if(Array.isArray(local)&&local.length)await write(module,local);
   }
