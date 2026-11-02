@@ -345,6 +345,7 @@ $('form').onsubmit=function(e){
   if(!date){msg('Isi tanggal transaksi.',1);return}
   if(!desc){msg('Isi keterangan transaksi.',1);return}
   if(!(amt>0)){msg('Jumlah harus lebih dari 0.',1);return}
+  if(st.sample){st.tx=[];st.sample=false;}
   var id=st.tx.reduce(function(m,t){return Math.max(m,t.id)},0)+1;
   st.tx.push({id:id,date:date,type:$('f-type').value,cat:$('f-cat').value,desc:desc,amt:amt});st.sample=false;
   if(st.period!=='all'&&st.period!==date.slice(0,7))st.period=date.slice(0,7);
@@ -355,10 +356,10 @@ var tt;
 $('rows').onclick=function(e){
   var b=e.target.closest('.x');if(!b)return;
   var id=+b.dataset.id,i=st.tx.findIndex(function(t){return t.id===id});if(i<0)return;
-  st.last=st.tx.splice(i,1)[0];st.sample=false;save();all();
+  st.last=st.tx.splice(i,1)[0];save();all();
   $('tmsg').textContent='Transaksi dihapus.';$('toast').hidden=false;clearTimeout(tt);tt=setTimeout(function(){$('toast').hidden=true;st.last=null},6000);
 };
-$('undo').onclick=function(){if(st.last){st.tx.push(st.last);st.last=null;st.sample=false;save();all()}$('toast').hidden=true};
+$('undo').onclick=function(){if(st.last){st.tx.push(st.last);st.last=null;save();all()}$('toast').hidden=true};
 $('chart').onclick=function(e){var g=e.target.closest('[data-k]');if(g){st.period=g.dataset.k;st.shown=40;all()}};
 $('chart').onkeydown=function(e){if(e.key==='Enter'||e.key===' '){var g=e.target.closest('[data-k]');if(g){e.preventDefault();st.period=g.dataset.k;all();var n=document.querySelector('[data-k="'+st.period+'"]');if(n)n.focus()}}};
 function arm(id,label,fn){var b=$(id),t;b.onclick=function(){if(b.dataset.arm){clearTimeout(t);b.dataset.arm='';b.textContent=label;fn();return}
