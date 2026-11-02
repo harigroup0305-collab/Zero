@@ -8,7 +8,7 @@
   let userId=null, syncing=false;
   function indicator(message,error){document.querySelectorAll(".zero-cloud-status").forEach(e=>{e.textContent=message;e.dataset.state=error?"error":"ok";});}
   async function write(module,payload){
-    if(!userId||syncing)return;
+    if(!userId)return;
     const {error}=await db.from("zero_user_data").upsert({user_id:userId,module,payload,updated_at:new Date().toISOString()},{onConflict:"user_id,module"});
     if(error){indicator("Cloud sync gagal",true);console.error("ZERO cloud sync:",error.message);return;}
     indicator("Cloud tersinkron");
