@@ -42,7 +42,8 @@ create policy "Users can delete their own ZERO data"
 create or replace function public.zero_set_updated_at()
 returns trigger
 language plpgsql
-as $$
+set search_path = pg_catalog
+as $
 begin
   new.updated_at = now();
   return new;
@@ -53,5 +54,8 @@ drop trigger if exists zero_user_data_updated_at on public.zero_user_data;
 create trigger zero_user_data_updated_at
 before update on public.zero_user_data
 for each row execute function public.zero_set_updated_at();
+
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on public.zero_user_data to authenticated;
 
 -- No anon/public policies. Never expose the service_role key in browser code.
