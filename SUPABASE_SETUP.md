@@ -21,11 +21,17 @@ The table stores one JSON array per user and module (`watchlist`, `trades`, `hol
 
 Because this is a public GitHub Pages repository, do not commit private credentials. The browser anon/publishable key is designed to be public, but only safe when the RLS policies above are active.
 
-## 4. Current implementation status
+## 4. Authentication
+
+The site now includes `login.html` with email/password sign-in and registration using Supabase Auth. App pages redirect unauthenticated visitors to the login page. The browser uses the public publishable key; database access remains restricted by the `authenticated` RLS policies.
+
+In Supabase Dashboard → Authentication → URL Configuration, set **Site URL** to `https://harigroup0305-collab.github.io/Zero/` and add that same URL plus `https://harigroup0305-collab.github.io/Zero/login.html` to the allowed Redirect URLs. Email confirmation is enabled by default on hosted projects; new users must verify their email before signing in.
+
+## 5. Current implementation status
 - [x] Database schema and per-user Row Level Security policy drafted.
-- [ ] Supabase project created and SQL applied.
-- [ ] Browser project configuration added.
-- [ ] Sign-up/sign-in UI and session handling.
+- [x] Supabase project created and SQL applied.
+- [x] Browser project configuration added.
+- [x] Sign-up/sign-in UI and session handling.
 - [ ] Local data migration and cloud sync with conflict/error handling.
 - [ ] Backup/export and restore verification.
 
