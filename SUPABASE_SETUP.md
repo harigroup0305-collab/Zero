@@ -1,6 +1,6 @@
 # ZERO — Supabase database setup
 
-This repository currently uses browser localStorage. These files prepare the secure cloud database; cloud sync is **not active yet**.
+ZERO now uses Supabase Auth and per-user cloud sync for the watchlist, trading journal, investment holdings, and finance transactions. Browser localStorage remains as a local cache.
 
 ## 1. Create a Supabase project
 1. Open https://supabase.com/dashboard and create a project.
@@ -27,12 +27,10 @@ The site now includes `login.html` with email/password sign-in and registration 
 
 In Supabase Dashboard → Authentication → URL Configuration, set **Site URL** to `https://harigroup0305-collab.github.io/Zero/` and add that same URL plus `https://harigroup0305-collab.github.io/Zero/login.html` to the allowed Redirect URLs. Email confirmation is enabled by default on hosted projects; new users must verify their email before signing in.
 
-## 5. Current implementation status
-- [x] Database schema and per-user Row Level Security policy drafted.
-- [x] Supabase project created and SQL applied.
-- [x] Browser project configuration added.
-- [x] Sign-up/sign-in UI and session handling.
-- [ ] Local data migration and cloud sync with conflict/error handling.
-- [ ] Backup/export and restore verification.
+## 5. Cloud synchronization
+- [x] Per-user cloud sync for watchlist, trades, holdings, and finance.
+- [x] Initial local data migration when a cloud record does not yet exist.
+- [x] Merge existing local and cloud records to reduce accidental overwrites.
+- [x] Demo finance sample data is excluded from initial migration.
 
-**Important:** No existing ZERO page has been switched to cloud storage yet. Current data remains in each browser's localStorage. Do not delete browser data during setup. Before enabling sync, export/backup existing records from each module.
+The first signed-in load waits for cloud synchronization before rendering each module. When both local and cloud records exist, entries are merged and duplicate identical entries are collapsed. Keep browser data intact until you have verified the records on your account. Export CSV backups periodically; the app does not yet provide a dedicated restore screen.
