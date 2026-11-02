@@ -47,6 +47,7 @@
     if(key.indexOf(prefix)===0){const module=key.slice(prefix.length);if(modules.includes(module)){try{write(module,JSON.parse(value))}catch(e){}}}
     if(key===financeKey){try{const parsed=JSON.parse(value);if(!parsed.sample&&Array.isArray(parsed.tx))write("finance",parsed.tx)}catch(e){}}
   };
+  window.ZERO=window.ZERO||{};window.ZERO.ready=window.ZERO_CLOUD_READY;
   db.auth.onAuthStateChange((event,session)=>{
     if(event==="SIGNED_IN"&&session&&session.user.id!==userId){location.reload();}
     if(event==="SIGNED_OUT"){userId=null;indicator("Cloud belum tersambung",true);}
