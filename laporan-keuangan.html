@@ -14,11 +14,6 @@
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font:400 15px/1.5 'IBM Plex Sans',system-ui,sans-serif;padding-block:24px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:16px;position:relative;z-index:1}
-.bg{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:0}
-.b{transform-box:fill-box;transform-origin:50% 100%;animation:grow .9s cubic-bezier(.2,.8,.2,1) backwards,bob 2.8s ease-in-out infinite alternate;animation-delay:calc(var(--i)*70ms),calc(.9s + var(--i)*70ms)}
-@keyframes grow{from{transform:scaleY(0)}}
-@keyframes bob{from{transform:scaleY(1)}to{transform:scaleY(.9)}}
-@media (prefers-reduced-motion:reduce){.b{animation:none}}
 h1,h2,p{margin:0}
 h1{font-size:26px;font-weight:600;text-wrap:balance;color:var(--title)}
 h2{font-size:16px;font-weight:600}
@@ -105,8 +100,6 @@ h1{text-shadow:0 0 16px color-mix(in srgb,var(--title) 75%,transparent),0 0 2px 
 .tile .val{font-size:clamp(15px,4.2vw,21px)}
 .btn{box-shadow:0 0 14px color-mix(in srgb,var(--accent) 55%,transparent)}
 .btn.ghost{box-shadow:none;border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
-.b[fill="var(--in)"]{filter:drop-shadow(0 0 5px var(--in))}
-.b[fill="var(--out)"]{filter:drop-shadow(0 0 5px var(--out))}
 .legend i{box-shadow:0 0 6px currentColor}
 input,select{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
 .sl .bar b{box-shadow:0 0 8px color-mix(in srgb,var(--accent) 60%,transparent)}
@@ -116,7 +109,6 @@ input,select{border-color:color-mix(in srgb,var(--accent) 30%,var(--line))}
 <style>.zero-cloud-status{font-size:12px;color:var(--muted)}.zero-cloud-status[data-state=error]{color:var(--out)}</style></head>
 <body>
 
-<canvas class="bg" id="rain" aria-hidden="true"></canvas>
 <div class="wrap">
   <nav class="site-nav" aria-label="Menu utama">
     <a class="brand" href="index.html">ZERO</a>
@@ -374,67 +366,6 @@ $('theme').onclick=function(){root.dataset.theme=curTheme()==='dark'?'light':'da
 
 var lw=0;
 if(window.ResizeObserver){new ResizeObserver(function(){var w=$('chart').clientWidth;if(w&&Math.abs(w-lw)>2){lw=w;renderChart()}}).observe($('chart'))}
-
-/* Latar hujan candlestick: lilin hijau (naik) dan merah (turun) jatuh dari atas */
-var rc=$('rain'),rx=rc.getContext('2d'),RW=0,RH=0,cs=[],ns=[],cUp='#3cc1b8',cDn='#f0805c',rf=0,rr=Math.random;
-function mkc(init){
-  var h=10+rr()*26,wk=4+rr()*14;
-  return {x:rr()*RW,y:init?rr()*(RH+120)-120:-(h+wk*2+rr()*220),h:h,wk:wk,w:5+rr()*4,v:.5+rr()*1.2,a:.35+rr()*.4,up:rr()<.5};
-}
-function mkn(init){
-  var p=rr()<.6,t=p?nf.format(1532400+Math.round((rr()-.5)*80)*100):(.05+rr()*2.6).toFixed(3).replace('.',',');
-  return {x:rr()*RW,y:init?rr()*(RH+60)-60:-20-rr()*240,v:.6+rr()*1.5,a:.25+rr()*.35,up:rr()<.5,t:t,p:p};
-}
-function rCols(){var s=getComputedStyle(root);cUp=s.getPropertyValue('--in').trim()||cUp;cDn=s.getPropertyValue('--out').trim()||cDn}
-function rSize(){
-  var d=Math.min(2,window.devicePixelRatio||1);RW=window.innerWidth;RH=window.innerHeight;
-  rc.width=Math.round(RW*d);rc.height=Math.round(RH*d);rx.setTransform(d,0,0,d,0,0);
-  var n=Math.max(45,Math.min(170,Math.round(RW/9)));cs=[];for(var i=0;i<n;i++)cs.push(mkc(true));
-  var m=Math.max(40,Math.min(130,Math.round(RW/11)));ns=[];for(var j=0;j<m;j++)ns.push(mkn(true));
-}
-function rDraw(){
-  if(rf++%30===0)rCols();
-  rx.clearRect(0,0,RW,RH);
-  cs.forEach(function(c){
-    var col=c.up?cUp:cDn;
-    rx.globalAlpha=c.a;rx.strokeStyle=col;rx.fillStyle=col;rx.lineWidth=1.5;rx.shadowColor=col;rx.shadowBlur=8;
-    rx.beginPath();rx.moveTo(c.x,c.y-c.wk);rx.lineTo(c.x,c.y+c.h+c.wk);rx.stroke();
-    rx.fillRect(c.x-c.w/2,c.y,c.w,c.h);
-    if(!RM){c.y+=c.v;if(c.y-c.wk>RH){Object.assign(c,mkc(false))}}
-  });
-  rx.shadowBlur=0;rx.font='500 12px "IBM Plex Mono",ui-monospace,monospace';rx.textBaseline='middle';
-  ns.forEach(function(n){
-    rx.globalAlpha=n.a;rx.fillStyle=n.up?cUp:cDn;rx.fillText(n.t,n.x,n.y);
-    if(!RM){n.y+=n.v;if(n.y>RH+16){var k=mkn(false);k.x=rr()*Math.max(1,RW-90);Object.assign(n,k)}}
-  });
-  rx.globalAlpha=1;
-  if(!RM)requestAnimationFrame(rDraw);
-}
-rCols();rSize();rDraw();
-window.addEventListener('resize',function(){rSize();if(RM)rDraw()});
-try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',rCols)}catch(e){}
-$('theme').addEventListener('click',function(){rCols();if(RM)rDraw()});
-
-/* Semua angka di ringkasan dan laporan arus kas: tiap digit hilang lalu muncul satu per satu, nilainya tidak berubah */
-var pt=0;
-function tickAll(){
-  if(pt)return;
-  var list=[].slice.call(document.querySelectorAll('#tiles .cn,#stmt .cn')).filter(function(el){return +el.dataset.n});
-  if(!list.length)return;
-  pt=1;var end=0;
-  list.forEach(function(el,gi){
-    var txt=el.dataset.pre+nf.format(+el.dataset.n)+el.dataset.suf,base=gi<4?gi*200:800+(gi-4)*60,len=txt.length;
-    end=Math.max(end,base+len*110+700);
-    setTimeout(function(){
-      if(!el.isConnected)return;
-      el.innerHTML=txt.split('').map(function(c){return '<span style="display:inline-block;white-space:pre;transition:opacity .25s">'+c+'</span>'}).join('');
-      [].slice.call(el.children).forEach(function(x,i){setTimeout(function(){x.style.opacity=0},i*110);setTimeout(function(){x.style.opacity=1},i*110+340)});
-      setTimeout(function(){if(el.isConnected)el.textContent=txt},len*110+700);
-    },base);
-  });
-  setTimeout(function(){pt=0},end+200);
-}
-if(!RM)setInterval(tickAll,4500);
 
 load();
 st.period=keys().indexOf('2026-10')>=0?'2026-10':(keys().pop()||'all');
