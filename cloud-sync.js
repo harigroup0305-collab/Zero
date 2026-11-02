@@ -55,7 +55,6 @@
   };
   window.ZERO=window.ZERO||{};window.ZERO.ready=window.ZERO_CLOUD_READY;
   db.auth.onAuthStateChange((event,session)=>{
-    if(event==="SIGNED_IN"&&session&&session.user.id!==userId){location.reload();}
     if(event==="SIGNED_OUT"){userId=null;indicator("Cloud belum tersambung",true);}
   });
 })();
