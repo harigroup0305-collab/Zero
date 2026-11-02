@@ -6,13 +6,29 @@
   const prefix="zero.v1.", financeKey="laporan-keuangan-v1";
   const modules=["watchlist","trades","holdings"];
   let userId=null, syncing=false;
+  const pending=new Map();
+  let flushing=false;
   function indicator(message,error){document.querySelectorAll(".zero-cloud-status").forEach(e=>{e.textContent=message;e.dataset.state=error?"error":"ok";});}
-  async function write(module,payload){
-    if(!userId)return;
-    const {error}=await db.from("zero_user_data").upsert({user_id:userId,module,payload,updated_at:new Date().toISOString()},{onConflict:"user_id,module"});
-    if(error){indicator("Cloud sync gagal",true);console.error("ZERO cloud sync:",error.message);return;}
-    indicator("Cloud tersinkron");
+  async function flushPending(){
+    if(!userId||flushing||!pending.size)return;
+    flushing=true;
+    indicator("Menyimpan ke cloud…");
+    try{
+      for(const [module,payload] of [...pending.entries()]){
+        const {error}=await db.from("zero_user_data").upsert({user_id:userId,module,payload,updated_at:new Date().toISOString()},{onConflict:"user_id,module"});
+        if(error){indicator("Tersimpan di perangkat · cloud menunggu koneksi",true);console.error("ZERO cloud sync:",error.message);return;}
+        pending.delete(module);
+      }
+      indicator("Cloud tersinkron");
+    }finally{flushing=false;}
   }
+  async function write(module,payload){
+    pending.set(module,payload);
+    await flushPending();
+    return !pending.has(module);
+  }
+  window.addEventListener("online",flushPending);
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")flushPending();});
   async function syncModule(module,key,read,writeLocal,skipSample){
     const {data,error}=await db.from("zero_user_data").select("payload").eq("user_id",userId).eq("module",module).maybeSingle();
     if(error)throw error;
@@ -29,6 +45,7 @@
   }
   window.ZERO_CLOUD={
     async push(module,payload){return write(module,payload);},
+    async flush(){return flushPending();},
     async pushFinance(value){if(value&&!value.sample&&Array.isArray(value.tx))return write("finance",value.tx);},
     async pullFinance(){if(!userId)return null;const {data,error}=await db.from("zero_user_data").select("payload").eq("user_id",userId).eq("module","finance").maybeSingle();if(error)throw error;return data?data.payload:null;}
   };
@@ -55,6 +72,7 @@
   };
   window.ZERO=window.ZERO||{};window.ZERO.ready=window.ZERO_CLOUD_READY;
   db.auth.onAuthStateChange((event,session)=>{
+    if(event==="SIGNED_IN"&&session){userId=session.user.id;flushPending();}
     if(event==="SIGNED_OUT"){userId=null;indicator("Cloud belum tersambung",true);}
   });
 })();
