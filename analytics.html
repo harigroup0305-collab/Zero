@@ -1,1 +1,44 @@
-<!doctype html><html lang="id"><head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth.js" defer></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Analytics & Risk | ZERO</title><link rel="stylesheet" href="zero-app.css"><script src="cloud-sync.js"></script><script src="zero-app.js"></script></head><body><div class="wrap"><header class="topbar"><span class="zero-cloud-status" aria-live="polite">Menghubungkan cloud…</span><a class="brand" href="index.html">ZERO<span>.</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a><a href="trading-journal.html">Trading Journal</a><a href="investment-tracker.html">Investasi</a><a href="analytics.html" aria-current="page">Analytics</a><a href="laporan-keuangan.html">Keuangan</a></nav></header><main><div class="eyebrow">04 / Performance review</div><h1>Analytics & Risk</h1><p class="intro">Ringkasan dihitung dari transaksi yang kamu masukkan ke Trading Journal. Statistik historis tidak menjamin hasil di masa depan.</p><div class="grid"><section class="tile"><small>Total transaksi</small><div class="value" id="total">0</div></section><section class="tile"><small>Win rate</small><div class="value" id="win">0%</div></section><section class="tile"><small>Profit factor</small><div class="value" id="pf">—</div></section><section class="tile"><small>Net P/L</small><div class="value" id="net">Rp0</div></section></div><div class="grid two" style="margin-top:14px"><section class="panel"><h2>Disiplin risiko</h2><p class="muted">Checklist evaluasi sebelum dan sesudah transaksi.</p><ul><li>Tentukan invalidasi setup sebelum entry.</li><li>Batasi risiko per posisi sesuai rencana.</li><li>Catat alasan entry dan exit.</li><li>Hindari menambah risiko untuk mengejar kerugian.</li></ul></section><section class="panel"><h2>Rincian hasil</h2><div id="details" class="muted" style="margin-top:12px">Belum ada data transaksi.</div></section></div><div class="toolbar"><h2>Hasil transaksi</h2><a class="btn secondary" href="trading-journal.html">Buka Trading Journal ↗</a></div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Metrik</th><th class="num">Nilai</th></tr></thead><tbody id="rows"></tbody></table></div></section></main><footer class="foot">Metrik ini bersifat deskriptif. Drawdown memerlukan urutan saldo/equity yang konsisten; belum dihitung dari data P/L tunggal.</footer></div><script>ZERO.ready.then(()=>{const t=ZERO.get("trades",[]),wins=t.filter(x=>x.pnl>0),loss=t.filter(x=>x.pnl<0),grossWin=wins.reduce((s,x)=>s+x.pnl,0),grossLoss=Math.abs(loss.reduce((s,x)=>s+x.pnl,0)),net=grossWin-grossLoss,rate=t.length?wins.length/t.length*100:0,pf=grossLoss?grossWin/grossLoss:(grossWin?Infinity:0),avg=t.length?net/t.length:0;document.getElementById("total").textContent=t.length;document.getElementById("win").textContent=rate.toFixed(1)+"%";document.getElementById("pf").textContent=pf===Infinity?"∞":pf.toFixed(2);document.getElementById("net").textContent=ZERO.money(net);document.getElementById("net").className="value "+(net>=0?"positive":"negative");document.getElementById("details").textContent=t.length?wins.length+" transaksi untung · "+loss.length+" transaksi rugi · "+(t.length-wins.length-loss.length)+" impas":"Belum ada data transaksi.";const rows=[["Gross profit",ZERO.money(grossWin)],["Gross loss",ZERO.money(grossLoss)],["Rata-rata P/L",ZERO.money(avg)],["Transaksi untung",wins.length],["Transaksi rugi",loss.length],["Profit factor",pf===Infinity?"∞":pf.toFixed(2)]];document.getElementById("rows").innerHTML=rows.map(r=>"<tr><td>"+r[0]+"</td><td class='num'>"+r[1]+"</td></tr>").join("");});</script></body></html>
+<!doctype html><html lang="id"><head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth.js" defer></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Analytics & Risk | ZERO</title><link rel="stylesheet" href="zero-app.css"><script src="cloud-sync.js"></script><script src="zero-app.js"></script></head><body><div class="wrap"><header class="topbar"><span class="zero-cloud-status" aria-live="polite">Menghubungkan cloud…</span><a class="brand" href="index.html">ZERO<span>.</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a><a href="trading-journal.html">Trading Journal</a><a href="investment-tracker.html">Investasi</a><a href="analytics.html" aria-current="page">Analytics</a><a href="laporan-keuangan.html">Keuangan</a></nav></header><main><div class="eyebrow">04 / Performance review</div><h1>Analytics & Risk</h1><p class="intro">Ringkasan dihitung dari transaksi yang kamu masukkan ke Trading Journal. Statistik historis tidak menjamin hasil di masa depan.</p><div class="grid"><section class="tile"><small>Total transaksi</small><div class="value" id="total">0</div></section><section class="tile"><small>Win rate</small><div class="value" id="win">0%</div></section><section class="tile"><small>Profit factor</small><div class="value" id="pf">—</div></section><section class="tile"><small>Net PNL</small><div class="value" id="net">Rp0</div></section></div><div class="grid two" style="margin-top:14px"><section class="panel"><h2>Disiplin risiko</h2><p class="muted">Checklist evaluasi sebelum dan sesudah transaksi.</p><ul><li>Tentukan invalidasi setup sebelum entry.</li><li>Batasi risiko per posisi sesuai rencana.</li><li>Catat alasan entry dan exit.</li><li>Hindari menambah risiko untuk mengejar kerugian.</li></ul></section><section class="panel"><h2>Rincian hasil</h2><div id="details" class="muted" style="margin-top:12px">Belum ada data transaksi.</div></section></div><div class="toolbar"><h2>Hasil transaksi</h2><a class="btn secondary" href="trading-journal.html">Buka Trading Journal ↗</a></div><section class="panel"><div class="tablewrap"><table><thead><tr><th>Metrik</th><th class="num">Nilai</th></tr></thead><tbody id="rows"></tbody></table></div></section></main><footer class="foot">Metrik ini bersifat deskriptif. Drawdown memerlukan urutan saldo/equity yang konsisten; belum dihitung dari data P/L tunggal.</footer></div><script>
+ZERO.ready.then(() => {
+  const trades = ZERO.get("trades", []).map(trade => ({...trade, pnl: Number(trade.pnl)}))
+    .filter(trade => Number.isFinite(trade.pnl));
+  const wins = trades.filter(trade => trade.pnl > 0);
+  const losses = trades.filter(trade => trade.pnl < 0);
+  const breakeven = trades.filter(trade => trade.pnl === 0);
+  const grossProfit = wins.reduce((sum, trade) => sum + trade.pnl, 0);
+  const grossLoss = Math.abs(losses.reduce((sum, trade) => sum + trade.pnl, 0));
+  const netPnl = grossProfit - grossLoss;
+  const winRate = trades.length ? wins.length / trades.length * 100 : 0;
+  const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : (grossProfit > 0 ? Infinity : null);
+  const averagePnl = trades.length ? netPnl / trades.length : 0;
+  const money = value => ZERO.money(value);
+  const pfLabel = profitFactor === Infinity ? "∞" : (profitFactor === null ? "—" : profitFactor.toFixed(2));
+
+  document.getElementById("total").textContent = ZERO.number(trades.length);
+  document.getElementById("win").textContent = winRate.toFixed(1) + "%";
+  document.getElementById("pf").textContent = pfLabel;
+  document.getElementById("net").textContent = money(netPnl);
+  document.getElementById("net").className = "value " + (netPnl >= 0 ? "positive" : "negative");
+
+  document.getElementById("details").textContent = trades.length
+    ? wins.length + " transaksi profit · " + losses.length + " transaksi loss · " + breakeven.length + " impas"
+    : "Belum ada data transaksi. Tambahkan transaksi melalui Trading Journal.";
+
+  const rows = [
+    ["Gross profit", money(grossProfit)],
+    ["Gross loss", money(grossLoss)],
+    ["Net PNL", money(netPnl)],
+    ["Rata-rata PNL per transaksi", money(averagePnl)],
+    ["Transaksi profit", ZERO.number(wins.length)],
+    ["Transaksi loss", ZERO.number(losses.length)],
+    ["Transaksi impas", ZERO.number(breakeven.length)],
+    ["Profit factor", pfLabel]
+  ];
+  document.getElementById("rows").innerHTML = rows.map(([label, value]) =>
+    "<tr><td>" + label + "</td><td class='num'>" + value + "</td></tr>"
+  ).join("");
+}).catch(error => {
+  console.error("ZERO analytics:", error);
+  document.getElementById("details").textContent = "Data analisis belum dapat dimuat. Muat ulang halaman.";
+});
+</script></body></html>
