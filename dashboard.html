@@ -1,1 +1,191 @@
-<!doctype html><html lang="id"><head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth.js" defer></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1118"><title>Trading Dashboard | ZERO</title><link rel="stylesheet" href="zero-app.css"><script src="cloud-sync.js"></script><script src="zero-app.js"></script></head><body><div class="wrap"><header class="topbar"><span class="zero-cloud-status" aria-live="polite">Menghubungkan cloud…</span><a class="brand" href="index.html">ZERO<span>.</span></a><nav class="navlinks"><a href="index.html">Beranda</a><a href="dashboard.html" aria-current="page">Dashboard</a><a href="trading-journal.html">Trading Journal</a><a href="investment-tracker.html">Investasi</a><a href="analytics.html">Analytics</a><a href="laporan-keuangan.html">Keuangan</a></nav></header><main><div class="eyebrow">01 / Control center</div><h1>Trading Dashboard</h1><p class="intro">Pusat kendali aktivitas trading dan investasi ZERO. Tambahkan aset ke watchlist dan catat harga pantauan secara manual. Data harga belum terhubung ke penyedia pasar live.</p><div class="grid"><section class="tile"><small>Aset dipantau</small><div class="value" id="assetCount">0</div></section><section class="tile"><small>Nilai watchlist</small><div class="value" id="watchValue">Rp0</div></section><section class="tile"><small>Catatan trading</small><div class="value" id="tradeCount">0</div></section><section class="tile"><small>Posisi investasi</small><div class="value" id="holdingCount">0</div></section></div><div class="toolbar"><h2>Watchlist aset</h2><button class="btn secondary" id="export">Ekspor CSV</button></div><section class="panel"><form id="assetForm" class="formgrid"><div><label for="symbol">Simbol</label><input id="symbol" maxlength="12" placeholder="BTC / BBCA" required></div><div><label for="name">Nama aset</label><input id="name" maxlength="50" placeholder="Bitcoin" required></div><div><label for="price">Harga pantauan (Rp)</label><input id="price" type="number" min="0" step="any" placeholder="0" required></div><div><label for="category">Kategori</label><select id="category"><option>Saham</option><option>Crypto</option><option>Forex</option><option>Komoditas</option><option>Lainnya</option></select></div><div class="wide"><button class="btn">Tambah ke watchlist</button></div></form></section><section class="panel" style="margin-top:14px"><div class="tablewrap"><table><thead><tr><th>Simbol</th><th>Nama</th><th>Kategori</th><th class="num">Harga pantauan</th><th>Aksi</th></tr></thead><tbody id="watchRows"></tbody></table></div><p class="muted" id="emptyWatch">Belum ada aset. Tambahkan aset pertama untuk memulai.</p></section><div class="toolbar"><h2>Akses cepat</h2></div><div class="grid two"><a class="panel" href="trading-journal.html"><span class="eyebrow">02 / Execution</span><h2>Trading Journal ↗</h2><p class="muted">Catat entry, exit, hasil, dan alasan transaksi.</p></a><a class="panel" href="investment-tracker.html"><span class="eyebrow">03 / Allocation</span><h2>Investment Tracker ↗</h2><p class="muted">Pantau kepemilikan, modal, dan nilai aset.</p></a><a class="panel" href="analytics.html"><span class="eyebrow">04 / Performance</span><h2>Analytics & Risk ↗</h2><p class="muted">Evaluasi hasil dan disiplin risiko.</p></a><a class="panel" href="laporan-keuangan.html"><span class="eyebrow">Existing module</span><h2>Laporan Keuangan ↗</h2><p class="muted">Kelola arus kas pribadi.</p></a></div></main><footer class="foot">ZERO · Data disimpan di perangkat dan disinkronkan ke cloud saat akun terhubung.</footer></div><script>ZERO.ready.then(()=>{const $=id=>document.getElementById(id);let assets=ZERO.get("watchlist",[]);function render(){ $("assetCount").textContent=assets.length;$("watchValue").textContent=ZERO.money(assets.reduce((s,a)=>s+Number(a.price||0),0));$("tradeCount").textContent=ZERO.get("trades",[]).length;$("holdingCount").textContent=ZERO.get("holdings",[]).length;$("watchRows").innerHTML=assets.map(a=>'<tr><td><b>'+a.symbol+'</b></td><td>'+a.name+'</td><td><span class="pill">'+a.category+'</span></td><td class="num">'+ZERO.money(a.price)+'</td><td><button class="btn danger" data-del="'+a.id+'">Hapus</button></td></tr>').join("");$("emptyWatch").hidden=assets.length>0}$("assetForm").addEventListener("submit",e=>{e.preventDefault();assets.push({id:ZERO.id(),symbol:$("symbol").value.trim().toUpperCase(),name:$("name").value.trim(),price:Number($("price").value),category:$("category").value});ZERO.set("watchlist",assets);e.target.reset();render()});$("watchRows").addEventListener("click",e=>{const id=e.target.dataset.del;if(!id)return;assets=assets.filter(a=>a.id!==id);ZERO.set("watchlist",assets);render()});$("export").onclick=()=>ZERO.csv(assets,"zero-watchlist.csv");render();});</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <title>Dashboard Investasi | ZERO</title>
+  <meta name="description" content="Pusat kendali portofolio, trading, dan watchlist ZERO.">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js" defer></script>
+  <link rel="stylesheet" href="zero-app.css">
+  <script src="cloud-sync.js"></script>
+  <script src="zero-app.js"></script>
+  <style>
+    :root{--dash-glow:rgba(56,217,150,.08);--dash-shadow:0 18px 50px rgba(0,0,0,.2)}
+    body{background-image:radial-gradient(ellipse at 85% 0,var(--dash-glow),transparent 34%);background-attachment:fixed}
+    .topbar{gap:18px;flex-wrap:wrap}.topbar .brand{font-size:1.25rem}.navlinks{gap:15px}
+    .dash-head{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin:34px 0 24px}
+    .dash-head h1{margin:8px 0 7px}.dash-head .intro{margin:0;max-width:650px}
+    .date-chip,.status-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:99px;padding:8px 12px;color:var(--muted);font-size:.76rem;white-space:nowrap}
+    .status-chip:before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+    .status-chip[data-state=error]:before{background:var(--red);box-shadow:none}
+    .metric-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}
+    .metric-card{position:relative;overflow:hidden;background:linear-gradient(145deg,#14212b,#101922);border:1px solid var(--line);border-radius:12px;padding:18px;min-width:0}
+    .metric-card:after{content:"";position:absolute;width:100px;height:100px;right:-50px;top:-55px;border-radius:50%;background:var(--dash-glow);filter:blur(12px)}
+    .metric-label{color:var(--muted);font-size:.76rem}.metric-value{font-size:clamp(1.25rem,2.2vw,1.8rem);font-weight:800;letter-spacing:-.05em;margin-top:9px;overflow-wrap:anywhere}
+    .metric-note{font-size:.7rem;color:var(--muted);margin-top:5px}
+    .dash-grid{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);gap:14px;margin-top:14px}
+    .dash-panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+    .panel-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}
+    .panel-title h2{font-size:1rem}.panel-title a{font-size:.78rem;color:var(--green)}
+    .formgrid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+    .formgrid .wide{grid-column:1/-1}
+    .formgrid input,.formgrid select{padding:9px;font-size:.86rem}
+    .watch-table td{font-size:.82rem}.watch-table th{font-size:.66rem}
+    .allocation-list{display:grid;gap:13px}.allocation-item{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.8rem}
+    .allocation-dot{width:9px;height:9px;border-radius:3px;background:var(--green)}
+    .allocation-name{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .allocation-amount{font-weight:700}.allocation-track{grid-column:2/-1;height:5px;background:var(--panel2);border-radius:9px;overflow:hidden;margin-top:-5px}
+    .allocation-fill{height:100%;background:var(--green);border-radius:9px}
+    .empty-state{padding:22px 12px;text-align:center;color:var(--muted);font-size:.82rem;border:1px dashed var(--line);border-radius:9px}
+    .activity-list{display:grid;gap:0}.activity-row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);font-size:.82rem}.activity-row:last-child{border-bottom:0}
+    .activity-main{min-width:0}.activity-main strong{display:block}.activity-main span{color:var(--muted);font-size:.72rem}
+    .activity-pnl{font-weight:750;white-space:nowrap}
+    .quick-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px}
+    .quick-link{display:block;padding:17px;background:var(--panel);border:1px solid var(--line);border-radius:10px;transition:.18s}
+    .quick-link:hover{border-color:#38d99688;transform:translateY(-2px)}
+    .quick-link small{color:var(--green);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase}
+    .quick-link strong{display:block;margin:8px 0 3px;font-size:.9rem}.quick-link span{color:var(--muted);font-size:.73rem}
+    .toolbar{margin:0 0 12px}.toolbar h2{font-size:1rem}
+    .foot{margin-top:34px}
+    @media(max-width:900px){.metric-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dash-grid{grid-template-columns:1fr}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){.wrap{width:calc(100% - 28px)}.topbar{gap:12px}.navlinks{gap:10px 13px}.dash-head{display:block;margin:26px 0 20px}.dash-head .date-chip{margin-top:14px}.metric-card{padding:15px}.dash-panel{padding:15px}.formgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.quick-grid{gap:9px}.quick-link{padding:14px}.activity-row{font-size:.76rem}}
+    @media(max-width:390px){.metric-grid{gap:8px}.metric-card{padding:12px}.metric-value{font-size:1.15rem}.quick-grid{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header class="topbar">
+    <a class="brand" href="index.html">ZERO<span>.</span></a>
+    <nav class="navlinks" aria-label="Navigasi utama">
+      <a href="index.html">Beranda</a><a href="dashboard.html" aria-current="page">Dashboard</a>
+      <a href="trading-journal.html">Journal</a><a href="investment-tracker.html">Investasi</a>
+      <a href="analytics.html">Analytics</a><a href="laporan-keuangan.html">Keuangan</a>
+    </nav>
+    <span class="status-chip zero-cloud-status" aria-live="polite">Menghubungkan cloud…</span>
+  </header>
+
+  <main>
+    <section class="dash-head">
+      <div><div class="eyebrow">ZERO / CONTROL CENTER</div><h1>Investment overview.</h1>
+      <p class="intro">Ringkasan aset, aktivitas trading, dan watchlist dalam satu tempat. Angka dihitung dari data yang kamu simpan di ZERO.</p></div>
+      <div class="date-chip" id="todayLabel">Memuat tanggal…</div>
+    </section>
+
+    <section class="metric-grid" aria-label="Ringkasan portofolio">
+      <article class="metric-card"><div class="metric-label">Nilai pasar portofolio</div><div class="metric-value" id="marketValue">Rp0</div><div class="metric-note">Estimasi dari harga pasar yang kamu masukkan</div></article>
+      <article class="metric-card"><div class="metric-label">Untung / rugi belum direalisasi</div><div class="metric-value" id="unrealized">Rp0</div><div class="metric-note">Nilai pasar dikurangi modal aset</div></article>
+      <article class="metric-card"><div class="metric-label">Akumulasi hasil trading</div><div class="metric-value" id="realized">Rp0</div><div class="metric-note">Total P/L bersih dari Trading Journal</div></article>
+      <article class="metric-card"><div class="metric-label">Aset dalam portofolio</div><div class="metric-value" id="holdingCount">0</div><div class="metric-note" id="tradeCount">0 transaksi tercatat</div></article>
+    </section>
+
+    <section class="dash-grid">
+      <article class="dash-panel">
+        <div class="panel-title"><h2>Watchlist aset</h2><button class="btn secondary" id="export" type="button">Ekspor CSV</button></div>
+        <form id="assetForm" class="formgrid">
+          <div><label for="symbol">Simbol</label><input id="symbol" maxlength="12" placeholder="BTC / BBCA" required></div>
+          <div><label for="name">Nama aset</label><input id="name" maxlength="50" placeholder="Bitcoin" required></div>
+          <div><label for="price">Harga pantauan (Rp)</label><input id="price" type="number" min="0" step="any" placeholder="0" required></div>
+          <div><label for="category">Kategori</label><select id="category"><option>Saham</option><option>Crypto</option><option>Forex</option><option>Komoditas</option><option>Lainnya</option></select></div>
+          <div class="wide"><button class="btn" type="submit">+ Tambah ke watchlist</button></div>
+        </form>
+        <div class="tablewrap" style="margin-top:18px"><table class="watch-table"><thead><tr><th>Simbol / Aset</th><th>Kategori</th><th class="num">Harga pantauan</th><th>Aksi</th></tr></thead><tbody id="watchRows"></tbody></table></div>
+        <p class="empty-state" id="emptyWatch">Belum ada aset di watchlist. Tambahkan aset untuk mulai memantau.</p>
+      </article>
+      <article class="dash-panel">
+        <div class="panel-title"><h2>Alokasi portofolio</h2><a href="investment-tracker.html">Kelola aset ↗</a></div>
+        <div id="allocationList" class="allocation-list"><div class="empty-state">Belum ada data kepemilikan.</div></div>
+      </article>
+    </section>
+
+    <section class="dash-grid">
+      <article class="dash-panel">
+        <div class="panel-title"><h2>Aktivitas trading terbaru</h2><a href="trading-journal.html">Buka journal ↗</a></div>
+        <div class="activity-list" id="activityList"><div class="empty-state">Belum ada transaksi yang dicatat.</div></div>
+      </article>
+      <article class="dash-panel">
+        <div class="panel-title"><h2>Ringkasan disiplin</h2><a href="analytics.html">Lihat analytics ↗</a></div>
+        <div class="metric-label">Win rate</div><div class="metric-value" id="winRate">0%</div>
+        <div class="metric-note" id="winDetail">Belum ada transaksi untuk dihitung.</div>
+        <div style="height:1px;background:var(--line);margin:18px 0"></div>
+        <div class="metric-label">Rata-rata hasil per transaksi</div><div class="metric-value" id="averagePnl">Rp0</div>
+        <div class="metric-note">Berdasarkan P/L bersih pada Trading Journal.</div>
+      </article>
+    </section>
+
+    <section class="quick-grid" aria-label="Akses cepat">
+      <a class="quick-link" href="trading-journal.html"><small>01 / Execution</small><strong>Trading Journal ↗</strong><span>Catat entry, exit, dan evaluasi.</span></a>
+      <a class="quick-link" href="investment-tracker.html"><small>02 / Allocation</small><strong>Investment Tracker ↗</strong><span>Kelola modal dan nilai aset.</span></a>
+      <a class="quick-link" href="analytics.html"><small>03 / Performance</small><strong>Analytics & Risk ↗</strong><span>Evaluasi hasil dan risiko.</span></a>
+      <a class="quick-link" href="laporan-keuangan.html"><small>04 / Finance</small><strong>Laporan Keuangan ↗</strong><span>Kelola arus kas pribadi.</span></a>
+    </section>
+  </main>
+  <footer class="foot">ZERO · Data performa berasal dari catatanmu. Harga pasar dan harga pantauan diperbarui secara manual, bukan feed live.</footer>
+</div>
+
+<script>
+ZERO.ready.then(()=>{
+  const $=id=>document.getElementById(id);
+  let assets=ZERO.get("watchlist",[]),trades=ZERO.get("trades",[]),holdings=ZERO.get("holdings",[]);
+  $("todayLabel").textContent=new Intl.DateTimeFormat("id-ID",{weekday:"long",day:"2-digit",month:"long",year:"numeric"}).format(new Date());
+  const safe=(value)=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;}
+  function render(){
+    const cost=holdings.reduce((s,h)=>s+Number(h.units||0)*Number(h.buy||0),0);
+    const market=holdings.reduce((s,h)=>s+Number(h.units||0)*Number(h.current||0),0);
+    const unrealized=market-cost,realized=trades.reduce((s,t)=>s+Number(t.pnl||0),0);
+    const wins=trades.filter(t=>Number(t.pnl)>0).length;
+    $("marketValue").textContent=ZERO.money(market);
+    $("unrealized").textContent=ZERO.money(unrealized);
+    $("unrealized").className="metric-value "+(unrealized>=0?"positive":"negative");
+    $("realized").textContent=ZERO.money(realized);
+    $("realized").className="metric-value "+(realized>=0?"positive":"negative");
+    $("holdingCount").textContent=holdings.length;
+    $("tradeCount").textContent=trades.length+" transaksi tercatat";
+    $("winRate").textContent=(trades.length?wins/trades.length*100:0).toFixed(1)+"%";
+    $("winDetail").textContent=trades.length?wins+" menang dari "+trades.length+" transaksi":"Belum ada transaksi untuk dihitung.";
+    $("averagePnl").textContent=ZERO.money(trades.length?realized/trades.length:0);
+    const rows=$("watchRows");rows.replaceChildren();
+    assets.forEach(a=>{
+      const tr=el("tr"),symbol=el("td"),name=el("div","muted",a.name),sym=el("b","",a.symbol);
+      symbol.append(sym,name);tr.append(symbol,el("td","",a.category),el("td","num",ZERO.money(a.price)));
+      const action=el("td"),btn=el("button","btn danger","Hapus");btn.type="button";btn.dataset.del=a.id;action.append(btn);tr.append(action);rows.append(tr);
+    });
+    $("emptyWatch").hidden=assets.length>0;
+    const alloc=$("allocationList");alloc.replaceChildren();
+    if(!holdings.length){alloc.append(el("div","empty-state","Belum ada kepemilikan. Tambahkan aset di Investment Tracker."));}
+    else{
+      const grouped={};holdings.forEach(h=>{const key=h.category||"Lainnya";grouped[key]=(grouped[key]||0)+Number(h.units||0)*Number(h.current||0)});
+      const entries=Object.entries(grouped).sort((a,b)=>b[1]-a[1]),denom=market||1;
+      entries.forEach(([name,value],i)=>{
+        const item=el("div","allocation-item"),dot=el("span","allocation-dot");dot.style.opacity=String(Math.max(.35,1-i*.12));
+        item.append(dot,el("span","allocation-name",name),el("strong","allocation-amount",ZERO.money(value)));
+        const track=el("div","allocation-track"),fill=el("div","allocation-fill");fill.style.width=Math.max(0,Math.min(100,value/denom*100))+"%";track.append(fill);item.append(track);alloc.append(item);
+      });
+    }
+    const activity=$("activityList");activity.replaceChildren();
+    const recent=trades.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).slice(0,5);
+    if(!recent.length)activity.append(el("div","empty-state","Belum ada transaksi. Catatan baru akan muncul di sini."));
+    recent.forEach(t=>{
+      const row=el("div","activity-row"),main=el("div","activity-main"),pnl=Number(t.pnl||0);
+      main.append(el("strong","",t.symbol+" · "+t.side),el("span","",ZERO.date(t.date)));
+      row.append(main,el("div","activity-pnl "+(pnl>=0?"positive":"negative"),ZERO.money(pnl)));activity.append(row);
+    });
+  }
+  $("assetForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    assets.push({id:ZERO.id(),symbol:$("symbol").value.trim().toUpperCase(),name:$("name").value.trim(),price:Number($("price").value),category:$("category").value});
+    ZERO.set("watchlist",assets);e.target.reset();render();
+  });
+  $("watchRows").addEventListener("click",e=>{
+    const id=e.target.dataset.del;if(!id)return;
+    assets=assets.filter(a=>a.id!==id);ZERO.set("watchlist",assets);render();
+  });
+  $("export").addEventListener("click",()=>ZERO.csv(assets,"zero-watchlist.csv"));
+  render();
+}).catch(error=>{console.error("ZERO dashboard:",error);document.querySelectorAll(".zero-cloud-status").forEach(e=>{e.textContent="Data belum siap · muat ulang";e.dataset.state="error";});});
+</script>
+</body>
+</html>
