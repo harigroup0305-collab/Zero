@@ -107,3 +107,36 @@
 @media screen and (max-width: 340px){
   body .journal-stats{grid-template-columns:1fr!important}
 }
+
+
+/* ZERO — layout aligned with approved Trading Journal sketch */
+@media(min-width:900px){
+  body{background:radial-gradient(ellipse at 65% 0%,rgba(35,105,78,.12),transparent 42%),#080e14}
+  .wrap{width:100%;max-width:none;margin:0}
+  .topbar{position:fixed;z-index:20;inset:0 auto 0 0;width:218px;padding:34px 20px 24px;display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:34px;background:linear-gradient(180deg,#0b141c,#080e14);border-right:1px solid #263844;border-bottom:0}
+  .brand{font-size:1.55rem;padding:0 10px}
+  .navlinks{display:flex;flex-direction:column;gap:8px;font-size:.92rem}
+  .navlinks a{padding:12px 13px;border-radius:10px}
+  .navlinks a[aria-current=page]{background:linear-gradient(90deg,rgba(26,190,127,.2),rgba(26,190,127,.04));color:#54e6aa;border-left:3px solid #20d99a}
+  .zero-cloud-status{margin-top:auto;padding:14px 10px;border-top:1px solid #263844}
+  main{margin-left:218px;padding:34px clamp(26px,3vw,54px) 48px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px}
+  .journal-heading,.journal-stats,.performance-card{grid-column:1/-1}
+  .journal-heading{align-items:center}
+  .journal-heading>.btn{width:auto}
+  .journal-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  .journal-stats .tile{min-height:120px;padding:20px 22px}
+  .journal-section{margin-top:22px;min-width:0}
+  .history-section{margin-top:22px;min-width:0}
+  .journal-form{grid-template-columns:repeat(2,minmax(0,1fr));padding:20px}
+  .journal-wide,.journal-actions{grid-column:1/-1}
+  .history-section{padding:20px}
+  .foot{margin-left:218px;padding-left:34px;padding-right:34px}
+}
+@media(max-width:899px){
+  .journal-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+  .journal-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .journal-section,.history-section{margin-top:18px}
+}
+@media(max-width:340px){.journal-stats{grid-template-columns:1fr}}
