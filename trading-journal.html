@@ -41,6 +41,16 @@
         <article class="tile"><small>Rata-rata hasil</small><div class="value" id="avg">Rp0</div><span class="stat-note">Per transaksi</span></article>
       </section>
 
+      <section class="performance-card" aria-label="Grafik performa trading">
+        <div class="performance-head">
+          <div><div class="eyebrow">PERFORMANCE</div><h2>Kurva ekuitas</h2><p>Perubahan akumulasi hasil bersih dari setiap transaksi.</p></div>
+          <div class="chart-legend"><span></span> Akumulasi P/L</div>
+        </div>
+        <div class="chart-summary"><strong id="chartTotal">Rp0</strong><small id="chartCaption">Belum ada data performa</small></div>
+        <div class="chart-frame"><svg id="performanceChart" viewBox="0 0 900 270" role="img" aria-label="Grafik garis akumulasi hasil trading"><text x="450" y="130" text-anchor="middle" class="chart-empty">Grafik akan muncul setelah transaksi dicatat.</text></svg></div>
+        <div class="chart-axis"><span id="chartStart">—</span><span id="chartEnd">—</span></div>
+      </section>
+
       <section class="journal-section">
         <div class="section-title"><div><div class="eyebrow">NEW ENTRY</div><h2>Tambah transaksi</h2><p>Isi hasil bersih setelah biaya transaksi.</p></div></div>
         <form id="form" class="journal-form">
@@ -75,6 +85,46 @@
       const localToday = () => { const d = new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"); };
       $("date").value = localToday();
 
+      const compactMoney = value => {
+        const abs = Math.abs(value);
+        if (abs >= 1000000000) return (value/1000000000).toFixed(1)+"M";
+        if (abs >= 1000000) return (value/1000000).toFixed(1)+"jt";
+        if (abs >= 1000) return (value/1000).toFixed(0)+"rb";
+        return Math.round(value).toString();
+      };
+      function renderChart() {
+        const svg = $("performanceChart");
+        const sorted = trades.slice().filter(t => t.date && Number.isFinite(Number(t.pnl)))
+          .sort((a,b) => String(a.date).localeCompare(String(b.date)));
+        let running = 0;
+        const points = sorted.map(t => ({date:t.date,value:(running += Number(t.pnl)||0)}));
+        $("chartTotal").textContent = ZERO.money(running);
+        $("chartTotal").className = running < 0 ? "negative" : "positive";
+        $("chartCaption").textContent = points.length ? points.length+" transaksi · akumulasi hasil bersih" : "Belum ada data performa";
+        $("chartStart").textContent = points.length ? ZERO.date(points[0].date) : "—";
+        $("chartEnd").textContent = points.length ? ZERO.date(points[points.length-1].date) : "—";
+        if (!points.length) {
+          svg.innerHTML = '<text x="450" y="130" text-anchor="middle" class="chart-empty">Grafik akan muncul setelah transaksi dicatat.</text>';
+          return;
+        }
+        const values = [0,...points.map(p=>p.value)];
+        let min = Math.min(...values), max = Math.max(...values);
+        if (min === max) { min -= 1; max += 1; }
+        const pad = (max-min)*.14; min -= pad; max += pad;
+        const x = i => 56 + (i/Math.max(points.length-1,1))*800;
+        const y = v => 18 + ((max-v)/(max-min))*202;
+        const coords = points.map((p,i)=>[points.length===1?456:x(i),y(p.value)]);
+        const line = coords.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+        const baseY = y(0);
+        const area = line+" L "+coords[coords.length-1][0].toFixed(1)+" "+baseY.toFixed(1)+" L "+coords[0][0].toFixed(1)+" "+baseY.toFixed(1)+" Z";
+        const grid = [0,.25,.5,.75,1].map(t=>{
+          const gy=18+t*202, val=max-t*(max-min);
+          return '<line x1="56" y1="'+gy+'" x2="856" y2="'+gy+'" class="chart-grid"/><text x="46" y="'+(gy+4)+'" text-anchor="end" class="chart-label">'+compactMoney(val)+'</text>';
+        }).join("");
+        const dots = coords.length <= 24 ? coords.map((p,i)=>'<circle cx="'+p[0]+'" cy="'+p[1]+'" r="3.5" class="chart-dot"><title>'+escapeHTML(ZERO.date(points[i].date))+': '+escapeHTML(ZERO.money(points[i].value))+'</title></circle>').join("") : "";
+        svg.innerHTML = '<defs><linearGradient id="equityFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#42c98a" stop-opacity=".25"/><stop offset="100%" stop-color="#42c98a" stop-opacity="0"/></linearGradient></defs>'+grid+'<line x1="56" y1="'+baseY+'" x2="856" y2="'+baseY+'" class="chart-zero"/><path d="'+area+'" class="chart-area"/><path d="'+line+'" class="chart-line"/>'+dots;
+      }
+
       function render() {
         const total = trades.reduce((s,t) => s + (Number(t.pnl)||0), 0);
         const wins = trades.filter(t => Number(t.pnl)>0).length;
@@ -83,6 +133,7 @@
         $("pnl").textContent = ZERO.money(total);
         $("pnl").className = "value "+(total>=0 ? "positive" : "negative");
         $("avg").textContent = ZERO.money(trades.length ? total/trades.length : 0);
+        renderChart();
         const query = $("search").value.trim().toLowerCase();
         const visible = trades.slice().reverse().filter(t => String(t.symbol||"").toLowerCase().includes(query));
         $("historyCount").textContent = trades.length+" transaksi tercatat";
