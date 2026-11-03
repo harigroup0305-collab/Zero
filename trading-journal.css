@@ -47,3 +47,54 @@
 .chart-empty{fill:#82918b;font-size:14px}
 .chart-axis{display:flex;justify-content:space-between;color:#71827c;font-size:.7rem;padding:0 4px 0 38px}
 @media(max-width:560px){.performance-card{padding:18px 14px 14px;border-radius:14px}.performance-head{flex-direction:column;gap:8px}.chart-summary{margin-top:14px}.chart-summary strong{font-size:1.4rem}.chart-frame svg{min-height:145px}}
+
+
+/* ZERO journal — refined dashboard layout */
+.journal-heading{align-items:flex-end;margin-bottom:22px}
+.journal-heading>div{min-width:0}
+.journal-heading .eyebrow{font-size:.7rem}
+.journal-heading h1{margin:7px 0 9px}
+.journal-heading .intro{max-width:650px;font-size:.94rem;line-height:1.7}
+.journal-heading>.btn{flex:none;margin-bottom:3px}
+.journal-stats{gap:12px}
+.journal-stats .tile{position:relative;overflow:hidden;padding:19px 20px;border-radius:15px;background:linear-gradient(145deg,#14212a,#101922);border-color:#263844;min-height:126px}
+.journal-stats .tile:after{content:"";position:absolute;right:-25px;top:-34px;width:92px;height:92px;border:1px solid rgba(66,201,138,.10);border-radius:50%;box-shadow:0 0 0 13px rgba(66,201,138,.025),0 0 0 27px rgba(66,201,138,.018)}
+.journal-stats .tile small{font-size:.78rem}
+.journal-stats .value{font-size:1.85rem;margin:10px 0 4px}
+.stat-note{font-size:.72rem}
+.performance-card{margin-top:18px}
+.journal-section{margin-top:24px}
+.section-title,.history-heading{margin-bottom:16px}
+.journal-form{border-radius:15px;background:linear-gradient(145deg,#121e27,#101821);border-color:#263844}
+.journal-form label,.search-label{font-weight:650}
+.journal-form input,.journal-form select,.journal-form textarea,.search-label input{border-radius:9px}
+.history-section{border-radius:15px;background:#111b25;border-color:#263844}
+.history-section .empty{border:1px dashed #30414d;border-radius:10px}
+@media(max-width:850px){
+ .journal-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:560px){
+ .journal-heading{gap:14px;margin-bottom:18px}
+ .journal-heading .intro{font-size:.88rem;line-height:1.65;margin-bottom:0}
+ .journal-heading>.btn{width:100%;min-height:46px}
+ .journal-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .journal-stats .tile{min-height:112px;padding:15px 14px;border-radius:13px}
+ .journal-stats .value{font-size:1.55rem;margin:8px 0 3px}
+ .stat-note{font-size:.68rem}
+ .performance-card{margin-top:14px}
+ .journal-section{margin-top:20px}
+ .journal-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:15px}
+ .journal-form>div:nth-child(1),.journal-form>div:nth-child(2){grid-column:span 1}
+ .journal-wide,.journal-actions{grid-column:1/-1}
+ .history-section{padding:15px}
+ .history-heading{align-items:stretch}
+ .search-label{min-width:0}
+ .tablewrap{margin:0 -4px}
+ table{min-width:680px}
+}
+@media(max-width:360px){
+ .journal-stats .tile{padding:13px 11px}
+ .journal-stats .value{font-size:1.35rem}
+ .journal-form{grid-template-columns:1fr}
+ .journal-form>div:nth-child(1),.journal-form>div:nth-child(2),.journal-wide,.journal-actions{grid-column:1}
+}
