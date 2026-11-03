@@ -1,1 +1,124 @@
-<!doctype html><html lang="id"><head><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="auth.js" defer></script><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Trading Journal | ZERO</title><link rel="stylesheet" href="zero-app.css"><script src="cloud-sync.js"></script><script src="zero-app.js"></script></head><body><div class="wrap"><header class="topbar"><span class="zero-cloud-status" aria-live="polite">Menghubungkan cloud…</span><a class="brand" href="index.html">ZERO<span>.</span></a><nav class="navlinks"><a href="dashboard.html">Dashboard</a><a href="trading-journal.html" aria-current="page">Trading Journal</a><a href="investment-tracker.html">Investasi</a><a href="analytics.html">Analytics</a><a href="laporan-keuangan.html">Keuangan</a></nav></header><main><div class="eyebrow">02 / Execution log</div><h1>Trading Journal</h1><p class="intro">Dokumentasikan keputusan, bukan hanya hasil. Catatan disimpan di perangkat dan disinkronkan ke cloud saat akun terhubung.</p><div class="grid"><section class="tile"><small>Total transaksi</small><div class="value" id="count">0</div></section><section class="tile"><small>Win rate</small><div class="value" id="win">0%</div></section><section class="tile"><small>Akumulasi P/L</small><div class="value" id="pnl">Rp0</div></section><section class="tile"><small>Rata-rata hasil</small><div class="value" id="avg">Rp0</div></section></div><div class="toolbar"><h2>Tambah catatan transaksi</h2><button class="btn secondary" id="export">Ekspor CSV</button></div><section class="panel"><form id="form" class="formgrid"><div><label>Tanggal</label><input id="date" type="date" required></div><div><label>Simbol aset</label><input id="symbol" placeholder="BTC / BBCA" required></div><div><label>Arah</label><select id="side"><option>Long</option><option>Short</option></select></div><div><label>Hasil bersih (Rp)</label><input id="pnlInput" type="number" step="any" required placeholder="Contoh: 250000"></div><div class="wide"><label>Alasan entry / catatan</label><textarea id="notes" rows="2" maxlength="500" placeholder="Setup, alasan, kondisi pasar, pelajaran..."></textarea></div><div><button class="btn">Simpan transaksi</button></div></form></section><section class="panel" style="margin-top:14px"><div class="tablewrap"><table><thead><tr><th>Tanggal</th><th>Aset</th><th>Arah</th><th class="num">P/L bersih</th><th>Catatan</th><th></th></tr></thead><tbody id="rows"></tbody></table></div><p id="empty" class="empty">Belum ada transaksi.</p></section></main><footer class="foot">Catat hasil setelah biaya transaksi. Ini jurnal pribadi, bukan rekomendasi investasi.</footer></div><script>ZERO.ready.then(()=>{const $=id=>document.getElementById(id);let trades=ZERO.get("trades",[]);function render(){const sum=trades.reduce((s,t)=>s+Number(t.pnl),0),wins=trades.filter(t=>t.pnl>0).length;$("count").textContent=trades.length;$("win").textContent=(trades.length?wins/trades.length*100:0).toFixed(1)+"%";$("pnl").textContent=ZERO.money(sum);$("pnl").className="value "+(sum>=0?"positive":"negative");$("avg").textContent=ZERO.money(trades.length?sum/trades.length:0);$("rows").innerHTML=trades.slice().reverse().map(t=>'<tr><td>'+ZERO.date(t.date)+'</td><td><b>'+t.symbol+'</b></td><td>'+t.side+'</td><td class="num '+(t.pnl>=0?"positive":"negative")+'">'+ZERO.money(t.pnl)+'</td><td>'+String(t.notes||"—").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))+'</td><td><button class="btn danger" data-id="'+t.id+'">Hapus</button></td></tr>').join("");$("empty").hidden=trades.length>0} $("form").addEventListener("submit",e=>{e.preventDefault();trades.push({id:ZERO.id(),date:$("date").value,symbol:$("symbol").value.trim().toUpperCase(),side:$("side").value,pnl:Number($("pnlInput").value),notes:$("notes").value.trim()});ZERO.set("trades",trades);e.target.reset();render()});$("rows").addEventListener("click",e=>{if(!e.target.dataset.id)return;trades=trades.filter(t=>t.id!==e.target.dataset.id);ZERO.set("trades",trades);render()});$("export").onclick=()=>ZERO.csv(trades,"zero-trading-journal.csv");render();});</script></body></html>
+<!doctype html>
+<html lang="id">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script src="auth.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1118">
+  <title>Trading Journal | ZERO</title>
+  <link rel="stylesheet" href="zero-app.css">
+  <link rel="stylesheet" href="trading-journal.css">
+  <script src="cloud-sync.js"></script>
+  <script src="zero-app.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <a class="brand" href="index.html">ZERO<span>.</span></a>
+      <nav class="navlinks" aria-label="Navigasi utama">
+        <a href="index.html">Beranda</a><a href="dashboard.html">Dashboard</a>
+        <a href="trading-journal.html" aria-current="page">Trading Journal</a>
+        <a href="investment-tracker.html">Investasi</a><a href="analytics.html">Analytics</a>
+        <a href="laporan-keuangan.html">Keuangan</a>
+      </nav>
+      <span class="zero-cloud-status" role="status" aria-live="polite">Memeriksa sinkronisasi…</span>
+    </header>
+
+    <main>
+      <div class="journal-heading">
+        <div><div class="eyebrow">02 / Execution log</div><h1>Trading Journal</h1>
+          <p class="intro">Catat keputusan, ukur hasil, dan evaluasi konsistensi trading. Data tersimpan di perangkat dan disinkronkan ke cloud saat akun terhubung.</p>
+        </div>
+        <button class="btn secondary" id="export" type="button">Ekspor CSV ↓</button>
+      </div>
+
+      <section class="journal-stats" aria-label="Ringkasan trading">
+        <article class="tile"><small>Total transaksi</small><div class="value" id="count">0</div><span class="stat-note">Seluruh catatan</span></article>
+        <article class="tile"><small>Win rate</small><div class="value" id="win">0%</div><span class="stat-note">Transaksi profit</span></article>
+        <article class="tile"><small>Akumulasi P/L</small><div class="value" id="pnl">Rp0</div><span class="stat-note">Hasil bersih</span></article>
+        <article class="tile"><small>Rata-rata hasil</small><div class="value" id="avg">Rp0</div><span class="stat-note">Per transaksi</span></article>
+      </section>
+
+      <section class="journal-section">
+        <div class="section-title"><div><div class="eyebrow">NEW ENTRY</div><h2>Tambah transaksi</h2><p>Isi hasil bersih setelah biaya transaksi.</p></div></div>
+        <form id="form" class="journal-form">
+          <div><label for="date">Tanggal</label><input id="date" type="date" required></div>
+          <div><label for="symbol">Simbol aset</label><input id="symbol" maxlength="20" placeholder="Contoh: BTC / BBCA" autocomplete="off" required></div>
+          <div><label for="side">Arah posisi</label><select id="side"><option value="Long">Long</option><option value="Short">Short</option></select></div>
+          <div><label for="pnlInput">Hasil bersih (Rp)</label><input id="pnlInput" type="number" step="any" inputmode="decimal" placeholder="Contoh: 250000" required></div>
+          <div class="journal-wide"><label for="notes">Alasan entry / evaluasi</label><textarea id="notes" rows="3" maxlength="500" placeholder="Setup, alasan entry, kondisi pasar, dan pelajaran yang didapat…"></textarea></div>
+          <div class="journal-actions"><button class="btn" type="submit">＋ Simpan transaksi</button><span id="formMessage" class="form-message" role="status" aria-live="polite"></span></div>
+        </form>
+      </section>
+
+      <section class="journal-section history-section">
+        <div class="history-heading"><div><div class="eyebrow">TRADE HISTORY</div><h2>Riwayat transaksi</h2><p id="historyCount">0 transaksi tercatat</p></div>
+          <label class="search-label" for="search">Cari aset<input id="search" type="search" placeholder="Cari simbol…"></label>
+        </div>
+        <div class="tablewrap"><table>
+          <thead><tr><th>Tanggal</th><th>Aset</th><th>Arah</th><th class="num">P/L bersih</th><th>Catatan</th><th><span class="sr-only">Aksi</span></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table></div>
+        <p id="empty" class="empty">Belum ada transaksi. Tambahkan transaksi pertamamu melalui form di atas.</p>
+      </section>
+    </main>
+    <footer class="foot">ZERO Trading Journal · Catatan pribadi untuk evaluasi disiplin dan performa, bukan rekomendasi investasi.</footer>
+  </div>
+
+  <script>
+    ZERO.ready.then(() => {
+      const $ = id => document.getElementById(id);
+      let trades = ZERO.get("trades", []);
+      const escapeHTML = value => String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+      const localToday = () => { const d = new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-"); };
+      $("date").value = localToday();
+
+      function render() {
+        const total = trades.reduce((s,t) => s + (Number(t.pnl)||0), 0);
+        const wins = trades.filter(t => Number(t.pnl)>0).length;
+        $("count").textContent = ZERO.number(trades.length);
+        $("win").textContent = (trades.length ? wins/trades.length*100 : 0).toFixed(1)+"%";
+        $("pnl").textContent = ZERO.money(total);
+        $("pnl").className = "value "+(total>=0 ? "positive" : "negative");
+        $("avg").textContent = ZERO.money(trades.length ? total/trades.length : 0);
+        const query = $("search").value.trim().toLowerCase();
+        const visible = trades.slice().reverse().filter(t => String(t.symbol||"").toLowerCase().includes(query));
+        $("historyCount").textContent = trades.length+" transaksi tercatat";
+        $("rows").innerHTML = visible.map(t => '<tr><td>'+escapeHTML(ZERO.date(t.date))+'</td><td><strong>'+escapeHTML(t.symbol)+'</strong></td><td><span class="pill">'+escapeHTML(t.side)+'</span></td><td class="num '+(Number(t.pnl)>=0?"positive":"negative")+'">'+escapeHTML(ZERO.money(t.pnl))+'</td><td class="notes-cell">'+escapeHTML(t.notes||"—")+'</td><td><button class="btn danger delete-trade" type="button" data-id="'+escapeHTML(t.id)+'" aria-label="Hapus transaksi '+escapeHTML(t.symbol)+'">Hapus</button></td></tr>').join("");
+        $("empty").hidden = visible.length > 0;
+        $("empty").textContent = trades.length && !visible.length ? "Tidak ada transaksi yang cocok dengan pencarian." : "Belum ada transaksi. Tambahkan transaksi pertamamu melalui form di atas.";
+      }
+
+      $("form").addEventListener("submit", event => {
+        event.preventDefault();
+        const symbol = $("symbol").value.trim().toUpperCase();
+        const amount = Number($("pnlInput").value);
+        if (!symbol || !Number.isFinite(amount)) { $("formMessage").textContent = "Periksa kembali data transaksi."; return; }
+        trades.push({id:ZERO.id(),date:$("date").value,symbol,side:$("side").value,pnl:amount,notes:$("notes").value.trim()});
+        ZERO.set("trades", trades);
+        event.target.reset();
+        $("date").value = localToday();
+        $("formMessage").textContent = "Transaksi berhasil disimpan.";
+        render();
+      });
+      $("rows").addEventListener("click", event => {
+        const button = event.target.closest("[data-id]");
+        if (!button) return;
+        if (!window.confirm("Hapus catatan transaksi ini?")) return;
+        trades = trades.filter(t => String(t.id) !== button.dataset.id);
+        ZERO.set("trades", trades);
+        $("formMessage").textContent = "Catatan transaksi dihapus.";
+        render();
+      });
+      $("search").addEventListener("input", render);
+      $("export").addEventListener("click", () => ZERO.csv(trades,"zero-trading-journal.csv"));
+      render();
+    }).catch(error => {
+      document.getElementById("formMessage").textContent = "Jurnal belum dapat dimuat. Muat ulang halaman atau periksa koneksi.";
+      console.error("ZERO journal:", error);
+    });
+  </script>
+</body>
+</html>
