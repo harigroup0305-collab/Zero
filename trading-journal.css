@@ -25,3 +25,25 @@
 .zero-cloud-status[data-state=error]{color:#ffb2ba}
 @media(max-width:850px){.journal-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.journal-form{grid-template-columns:repeat(2,minmax(0,1fr))}.topbar{align-items:flex-start;flex-direction:column}}
 @media(max-width:560px){.journal-heading{align-items:flex-start;flex-direction:column}.journal-stats,.journal-form{grid-template-columns:1fr}.journal-wide,.journal-actions{grid-column:auto}.history-section{padding:15px}.history-heading{align-items:stretch;flex-direction:column}.search-label{min-width:0}.tablewrap{margin:0 -4px}table{min-width:680px}.journal-form{padding:16px}}
+
+/* Calm emerald performance chart */
+.performance-card{margin-top:22px;padding:24px 26px 18px;background:linear-gradient(145deg,#151f20,#11191b);border:1px solid rgba(115,157,139,.17);border-radius:18px;box-shadow:0 18px 48px rgba(0,0,0,.13)}
+.performance-head{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.performance-head h2{font-size:1.3rem;margin:5px 0}
+.performance-head p{margin:4px 0;color:var(--muted);font-size:.84rem}
+.chart-legend{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.76rem;padding-top:8px;white-space:nowrap}
+.chart-legend span{width:8px;height:8px;border-radius:50%;background:#42c98a;box-shadow:0 0 12px rgba(66,201,138,.45)}
+.chart-summary{display:flex;align-items:baseline;gap:12px;margin-top:20px}
+.chart-summary strong{font-size:1.65rem;letter-spacing:-.04em}
+.chart-summary small{color:var(--muted);font-size:.76rem}
+.chart-frame{width:100%;margin-top:10px;overflow:hidden}
+.chart-frame svg{display:block;width:100%;height:auto;min-height:170px;overflow:visible}
+.chart-grid{stroke:rgba(169,190,181,.11);stroke-width:1;stroke-dasharray:3 6}
+.chart-zero{stroke:rgba(169,190,181,.28);stroke-width:1;stroke-dasharray:4 5}
+.chart-label{fill:#71827c;font-size:11px}
+.chart-area{fill:url(#equityFill)}
+.chart-line{fill:none;stroke:#42c98a;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 5px rgba(66,201,138,.2))}
+.chart-dot{fill:#42c98a;stroke:#14201c;stroke-width:2}
+.chart-empty{fill:#82918b;font-size:14px}
+.chart-axis{display:flex;justify-content:space-between;color:#71827c;font-size:.7rem;padding:0 4px 0 38px}
+@media(max-width:560px){.performance-card{padding:18px 14px 14px;border-radius:14px}.performance-head{flex-direction:column;gap:8px}.chart-summary{margin-top:14px}.chart-summary strong{font-size:1.4rem}.chart-frame svg{min-height:145px}}
