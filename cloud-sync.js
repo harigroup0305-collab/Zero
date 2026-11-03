@@ -80,7 +80,7 @@
         for(const module of modules){
           const localRaw=localStorage.getItem(scopedKey(nextId,prefix+module));
           const remote=await fetchModule(nextId,module);
-          const local=localRaw===null?null:parse(scopedKey(nextId,prefix+module),[]);
+          const local=localRaw===null?(previous===nextId?parse(prefix+module,[]):null):parse(scopedKey(nextId,prefix+module),[]);
           let value;
           if(local!==null&&remote!==null)value=[...new Map([...(Array.isArray(remote)?remote:[]),...(Array.isArray(local)?local:[])].map(item=>[JSON.stringify(item),item])).values()];
           else if(local!==null)value=local;
@@ -91,7 +91,7 @@
         }
         const localFinanceRaw=localStorage.getItem(scopedKey(nextId,financeKey));
         const remoteFinance=await fetchModule(nextId,"finance");
-        const localFinance=localFinanceRaw===null?null:parse(scopedKey(nextId,financeKey),null);
+        const localFinance=localFinanceRaw===null?(previous===nextId?parse(financeKey,null):null):parse(scopedKey(nextId,financeKey),null);
         let tx=Array.isArray(remoteFinance)?remoteFinance:[];
         if(localFinance&&!localFinance.sample&&Array.isArray(localFinance.tx)){
           tx=[...new Map([...tx,...localFinance.tx].map(item=>[JSON.stringify(item),item])).values()];
